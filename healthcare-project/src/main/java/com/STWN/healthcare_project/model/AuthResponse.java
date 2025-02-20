@@ -23,7 +23,7 @@ public class AuthResponse {
     private String email;
     private List<RoleType> roles;
 
-    public static AuthResponse fromUserId(UserInfo userInfo, String token){
+    public static AuthResponse fromUserInfo(UserInfo userInfo, String token){
         return AuthResponse.builder()
                 .token(token)
                 .userId(userInfo.getUserId())

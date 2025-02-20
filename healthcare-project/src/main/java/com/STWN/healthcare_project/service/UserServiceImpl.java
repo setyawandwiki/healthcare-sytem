@@ -38,7 +38,7 @@ public class UserServiceImpl implements UserService {
             throw new UsernameAlreadyExist("username already exist");
         }
 
-        if(request.getPassword().equals(request.getPasswordConfirmation())){
+        if(!request.getPassword().equals(request.getPasswordConfirmation())){
             throw new BadRequestException("password is not matched");
         }
 
