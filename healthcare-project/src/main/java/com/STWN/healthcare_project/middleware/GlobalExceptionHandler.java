@@ -1,7 +1,6 @@
 package com.STWN.healthcare_project.middleware;
 
-import com.STWN.healthcare_project.common.exception.BadRequestException;
-import com.STWN.healthcare_project.common.exception.ResourceNotFoundException;
+import com.STWN.healthcare_project.common.exception.*;
 import com.STWN.healthcare_project.model.ErrorResponse;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,16 +10,21 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import javax.management.relation.RoleNotFoundException;
 import java.time.LocalDateTime;
 
 @RestControllerAdvice
 @Slf4j
 @Hidden
 public class GlobalExceptionHandler {
-    @ExceptionHandler(ResourceNotFoundException.class)
+    @ExceptionHandler({
+            ResourceNotFoundException.class,
+            UserNotFoundException.class,
+            RoleNotFoundException.class
+    })
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleResourceNotFoundException(
-            HttpServletRequest request, ResourceNotFoundException e){
+            HttpServletRequest request, RuntimeException e){
         return ErrorResponse.builder()
                 .code(HttpStatus.NOT_FOUND.value())
                 .message(e.getMessage())
@@ -47,6 +51,26 @@ public class GlobalExceptionHandler {
                 e.getMessage());
         return ErrorResponse.builder()
                 .code(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .message(e.getMessage())
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+    @ExceptionHandler(InvalidPasswordException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ErrorResponse handleUnAuthorizedException(
+            HttpServletRequest request, InvalidPasswordException e){
+        return ErrorResponse.builder()
+                .code(HttpStatus.UNAUTHORIZED.value())
+                .message(e.getMessage())
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+    @ExceptionHandler({UsernameAlreadyExist.class, EmailAlreadyExist.class})
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ErrorResponse handleConflickException(
+            HttpServletRequest request, Exception e){
+        return ErrorResponse.builder()
+                .code(HttpStatus.UNAUTHORIZED.value())
                 .message(e.getMessage())
                 .timestamp(LocalDateTime.now())
                 .build();
