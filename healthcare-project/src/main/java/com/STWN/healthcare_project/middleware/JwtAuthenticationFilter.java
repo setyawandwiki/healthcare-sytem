@@ -37,6 +37,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }catch (InsufficientAuthenticationException e){
                 handlerExceptionResolver.resolveException(request, response, null, e);
             }
+            return;
         }
 
         try{

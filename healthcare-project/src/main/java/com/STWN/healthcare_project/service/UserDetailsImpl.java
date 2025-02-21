@@ -22,8 +22,8 @@ import java.util.Optional;
 @Slf4j
 public class UserDetailsImpl implements UserDetailsService {
 
-    private final String USER_CACHE_KEY = "cache:user";
-    private final String USER_ROLES_CACHE_KEY = "cache:user:roles";
+    private final String USER_CACHE_KEY = "cache:user:";
+    private final String USER_ROLES_CACHE_KEY = "cache:user:roles:";
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final CacheService cacheService;

@@ -25,33 +25,36 @@ public class ApiSecurityConfiguration {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
+    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity.csrf(AbstractHttpConfigurer::disable)
+                .cors(httpSecurityCorsConfigurer -> {
+                    httpSecurityCorsConfigurer.configurationSource(corsConfigurationSource());
+                })
                 .authorizeHttpRequests(registry ->
-                        registry.requestMatchers("/auth/**", "/api-docs/**", "/swagger-ui/**").permitAll()
-                                .anyRequest().authenticated())
+                        registry.requestMatchers("/auth/**", "/api-docs/**", "/swagger-ui/**", "/webhook/xendit/**", "/actuator/**").permitAll()
+                                .anyRequest().authenticated()
+                )
                 .sessionManagement(configurer ->
-                        configurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                        configurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling(httpSecurityconfig ->
-                        httpSecurityconfig
-                                .authenticationEntryPoint((
-                                        request,
-                                        response,
-                                        authException) -> {
-                                    throw authException;
-                                })).build();
-
+                .exceptionHandling(httpSecurityConfig ->
+                        httpSecurityConfig.authenticationEntryPoint((request, response, authException) -> {
+                            throw authException ;
+                        })
+                )
+                .build();
     }
+
     @Bean
-    public CorsConfigurationSource corsConfigurationSource(){
+    CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of("http://localhost:8080"));
-        configuration.setAllowedMethods(List.of("GET","POST","PUT","DELETE"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
-
+        configuration.setAllowedOrigins(List.of("http://localhost:8080", "http://localhost:3000"));
+        configuration.addAllowedMethod("*");
+        configuration.addAllowedHeader("*");
+        configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 
         source.registerCorsConfiguration("/**", configuration);
