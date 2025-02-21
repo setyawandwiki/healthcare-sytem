@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import javax.management.relation.RoleNotFoundException;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -129,5 +130,34 @@ public class UserServiceImpl implements UserService {
         cacheService.evict(rolesCacheKey);
 
         return UserResponse.fromUSerAndRole(user, roles);
+    }
+
+    @Transactional
+    @Override
+    public UserResponse grantUserRole(Long userId, RoleType roleType) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(()-> new UserNotFoundException("user with id " + userId + " found"));
+
+        Role role = roleRepository.findByName(roleType)
+                .orElseThrow(()-> new ResourceNotFoundException("role with id " + roleType + " found"));
+
+        Optional<UserRole> existingRole = userRoleRepository.existsByUserIdAndRoleId(userId, role.getRoleId());
+        if(existingRole.isPresent()){
+            throw new IllegalStateException("user " + userId + " already has role");
+        }
+
+        UserRole.UserRoleId  userRoleId = new UserRole.UserRoleId();
+        userRoleId.setRoleId(role.getRoleId());
+        userRoleId.setUserId(user.getUserId());
+
+
+        UserRole userRole = UserRole.builder()
+                .id(userRoleId)
+                .build();
+
+        userRoleRepository.save(userRole);
+
+        List<Role> userRoles = roleRepository.findByUserIds(userId);
+        return UserResponse.fromUSerAndRole(user, userRoles);
     }
 }

@@ -22,7 +22,8 @@ public class HospitalServiceImpl implements HospitalService {
 
     @Override
     public Page<HospitalResponse> search(String keyword, Pageable pageable) {
-        return null;
+        return hospitalRepository.findByNameContainingIgnoreCase(keyword, pageable)
+                .map(this::convertToResponse);
     }
 
     @Override

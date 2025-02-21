@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @SecurityRequirement(name = "Bearer")
 @PreAuthorize("hasRole('SUPER_ADMIN')")
-public class HospitalController {
+public class AdminHospitalController {
     private final HospitalService hospitalService;
     @PostMapping
     public ResponseEntity<HospitalResponse> registerHospital(
