@@ -9,5 +9,5 @@ import java.util.Optional;
 public interface DoctorSpecializationRepository extends JpaRepository<DoctorSpecialization, Long> {
     List<DoctorSpecialization> findByDoctorId(Long doctorId);
     List<DoctorSpecialization> findBySpecializationId(Long id);
-    Optional<DoctorSpecialization> findByDoctorIdAndSpecialization(Long doctorId, Long specialization);
+    Optional<DoctorSpecialization> findByDoctorIdAndSpecializationId(Long doctorId, Long specialization);
 }

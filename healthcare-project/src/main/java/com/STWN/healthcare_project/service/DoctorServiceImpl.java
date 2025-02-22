@@ -1,5 +1,6 @@
 package com.STWN.healthcare_project.service;
 
+import com.STWN.healthcare_project.common.exception.ForbiddenAccessException;
 import com.STWN.healthcare_project.common.exception.ResourceNotFoundException;
 import com.STWN.healthcare_project.common.exception.UserNotFoundException;
 import com.STWN.healthcare_project.constant.RoleType;
@@ -172,7 +173,39 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Override
     public void deleteDoctorAvailability(Long doctorId, Long availabilityId) {
+        DoctorAvailability availability = doctorAvailabilityRepository.findById(doctorId)
+                .orElseThrow(() -> new ResourceNotFoundException("doctor availability not found with id : "
+                        + availabilityId));
 
+        DoctorResponse doctorResponse = getDoctorById(doctorId);
+        if(!availability.getDoctorId().equals(doctorId)){
+            throw new ForbiddenAccessException("cannot update doctor availability");
+        }
+        doctorAvailabilityRepository.delete(availability);
+    }
+
+    @Override
+    @Transactional
+    public DoctorResponse updateDoctorAvailability(Long doctorId, DoctorAvailabilityRequest request) {
+        Doctor doctor = doctorRepository.findById(doctorId)
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor not found with id : " + doctorId));
+        DoctorAvailability availability = new DoctorAvailability();
+        availability.setDoctorId(doctorId);
+        availability.setDate(request.getDate());
+        availability.setStartTime(request.getStartTime());
+        availability.setEndTime(request.getEndTime());
+        availability.setConsultationType(request.getConsultationType());
+        availability.setAvailable(true);
+
+        doctorAvailabilityRepository.save(availability);
+
+        return convertToDoctorResponse(doctor);
+    }
+
+    @Override
+    public Doctor getDoctorByUserId(Long userId) {
+        return doctorRepository.findByUserId(userId)
+                .orElseThrow(()-> new ResourceNotFoundException("doctor with id : "+ userId + " is not found"));
     }
 
     private DoctorResponse convertToDoctorResponse(Doctor doctor) {
