@@ -3,10 +3,12 @@ package com.STWN.healthcare_project.service;
 import com.STWN.healthcare_project.common.exception.AppointmentConflictException;
 import com.STWN.healthcare_project.common.exception.ForbiddenAccessException;
 import com.STWN.healthcare_project.common.exception.ResourceNotFoundException;
+import com.STWN.healthcare_project.constant.AppointmentStatus;
 import com.STWN.healthcare_project.entity.*;
 import com.STWN.healthcare_project.model.AppointmentRequest;
 import com.STWN.healthcare_project.model.AppointmentRescheduleRequest;
 import com.STWN.healthcare_project.model.AppointmentResponse;
+import com.STWN.healthcare_project.model.PaymentResponse;
 import com.STWN.healthcare_project.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,8 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final DoctorAvailabilityRepository doctorAvailabilityRepository;
     private final AppointmentRepository appointmentRepository;
     private final HospitalRepository hospitalRepository;
+    private final PaymentRepository paymentRepository;
+    private final PaymentService paymentService;
     @Override
     @Transactional
     public AppointmentResponse bookAppointment(AppointmentRequest request) {
@@ -81,6 +85,8 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         appointmentRepository.save(appointment);
 
+        PaymentResponse payment = paymentService.createPayment(appointment);
+
         return AppointmentResponse.builder()
                 .id(appointment.getId())
                 .patientId(appointment.getPatientId())
@@ -93,6 +99,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .endTime(appointment.getEndTime())
                 .consultationType(appointment.getConsultationType())
                 .status(appointment.getStatus())
+                .paymentDetail(payment)
                 .build();
     }
 
@@ -146,6 +153,9 @@ public class AppointmentServiceImpl implements AppointmentService {
     public List<AppointmentResponse> listUserAppointments(Long userId) {
         List<Appointment> appointments = appointmentRepository
                 .findByPatientIdOrderByAppointmentDateDescStartTimeDesc(userId);
+        List<Long> ids = appointments.stream().map(Appointment::getId).toList();
+//        List<Payment> payments = paymentRepository.findAllByAppointments(ids);
+//        convertToAppointmentResponse(List<Appointment> appointments, List<Payment> payments);
         return appointments.stream()
                 .map(this::convertToAppointmentResponse)
                 .toList();
@@ -176,16 +186,8 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Appointment not found"));
     }
 
-    @Override
-    public List<AppointmentResponse> listDoctorAppointments(Long doctorId) {
-//        List<Appointment> appointments = appointmentRepository.findByDoctorIdAndAppointmentDateOrderByStartTimeAsc(doctorId);
-//        return appointments.stream()
-//                .map(this::convertToAppointmentResponse)
-//                .toList();
-        return List.of();
-    }
-
     private AppointmentResponse convertToAppointmentResponse(Appointment appointment) {
+        PaymentResponse byAppointmentId = paymentService.findByAppointmentId(appointment.getId());
         return AppointmentResponse.builder()
                 .id(appointment.getId())
                 .patientId(appointment.getPatientId())
@@ -195,6 +197,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .endTime(appointment.getEndTime())
                 .consultationType(appointment.getConsultationType())
                 .status(appointment.getStatus())
+                .paymentDetail(byAppointmentId)
                 .build();
     }
 }

@@ -1,5 +1,6 @@
 package com.STWN.healthcare_project.entity;
 
+import com.STWN.healthcare_project.constant.AppointmentStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
