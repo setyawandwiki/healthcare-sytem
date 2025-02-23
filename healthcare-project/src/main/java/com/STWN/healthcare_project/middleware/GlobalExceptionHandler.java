@@ -37,7 +37,7 @@ public class GlobalExceptionHandler {
                 .timestamp(LocalDateTime.now())
                 .build();
     }
-    @ExceptionHandler(BadRequestException.class)
+    @ExceptionHandler({BadRequestException.class, AppointmentConflictException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse badRequestException(
             HttpServletRequest request, BadRequestException e){
