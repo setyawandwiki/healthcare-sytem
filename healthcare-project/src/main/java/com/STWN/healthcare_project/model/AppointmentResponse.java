@@ -1,6 +1,7 @@
 package com.STWN.healthcare_project.model;
 
 import com.STWN.healthcare_project.entity.AppointmentStatus;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
@@ -16,6 +17,7 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @Builder
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class AppointmentResponse {
     private Long id;
     private Long patientId;
